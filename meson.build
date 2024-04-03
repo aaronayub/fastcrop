@@ -8,7 +8,9 @@ project('fastcrop', 'c',
 
 gtkdep = dependency('gtk4', version: '>=4')
 
+subdir('src')
+
 executable('fastcrop',
-  sources : files(['main.c', 'fc-app.c']),
+  sources,
   dependencies : gtkdep,
   install : true)
