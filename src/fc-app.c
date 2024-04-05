@@ -18,8 +18,21 @@ static void fc_app_activate (GApplication *app) {
 	g_printerr ("Please provide the path of a file to be cropped with fastcrop.\n");
 }
 
+static void quit_shortcut_cb (GSimpleAction *action, GVariant *parameter, gpointer app) {
+	g_application_quit (G_APPLICATION (app));
+}
+
+static GActionEntry action_entries[] = {
+	{"quit", quit_shortcut_cb, NULL, NULL, NULL, NULL}
+};
+
 static void fc_app_open (GApplication *app, GFile **files, int n_files, const char *hint) {
   FcAppWindow *window;
+
+  // Setup all accelerators
+	g_action_map_add_action_entries (G_ACTION_MAP (app), action_entries, G_N_ELEMENTS (action_entries), app);
+  const char *accels[3] = {"q", "<Control>q", NULL};
+  gtk_application_set_accels_for_action (GTK_APPLICATION (app), "app.quit", accels);
 
   // Setup the application window
   window = fc_app_window_new (GTK_APPLICATION (app));
