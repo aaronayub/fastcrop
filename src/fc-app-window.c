@@ -32,7 +32,7 @@ void fc_app_window_open_file (FcAppWindow *window, GFile *file) {
 
   // Exit early if the file does not exist
   if (!g_file_query_exists (file, NULL)) {
-    g_print ("Could not open file: %s. Exiting", filepath);
+    g_print ("Could not open file: %s. Exiting.\n", filepath);
     gtk_window_close (GTK_WINDOW (window));
   }
 
