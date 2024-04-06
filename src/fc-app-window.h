@@ -9,3 +9,6 @@
 G_DECLARE_FINAL_TYPE (FcAppWindow, fc_app_window, FC, APP_WINDOW, GtkApplicationWindow)
 
 FcAppWindow *fc_app_window_new (GtkApplication *app);
+
+/** Load the image file, and set up the window if the file is valid. */
+void fc_app_window_open_file (FcAppWindow *window, GFile *file);

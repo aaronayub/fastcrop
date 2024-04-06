@@ -29,6 +29,13 @@ static GActionEntry action_entries[] = {
 static void fc_app_open (GApplication *app, GFile **files, int n_files, const char *hint) {
   FcAppWindow *window;
 
+  // Exit early if the file does not exist.
+  if (!g_file_query_exists (files[0], NULL)) {
+    char *filepath = g_file_get_path (files[0]);
+    g_print ("Could not open file: %s. Exiting", filepath);
+    free (filepath);
+  }
+
   // Setup all accelerators
 	g_action_map_add_action_entries (G_ACTION_MAP (app), action_entries, G_N_ELEMENTS (action_entries), app);
   const char *accels[3] = {"q", "<Control>q", NULL};
@@ -38,6 +45,7 @@ static void fc_app_open (GApplication *app, GFile **files, int n_files, const ch
   window = fc_app_window_new (GTK_APPLICATION (app));
   gtk_window_present (GTK_WINDOW (window));
   gtk_window_set_title (GTK_WINDOW (window), "fastcrop");
+  fc_app_window_open_file (window, files[0]);
 }
 
 static void fc_app_class_init (FcAppClass *class) {

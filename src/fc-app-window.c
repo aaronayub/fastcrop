@@ -7,6 +7,8 @@
 
 struct _FcAppWindow {
 	GtkApplicationWindow parent;
+  GtkWidget *draw_area;
+  GdkPixbuf *source_pb;
 };
 
 G_DEFINE_TYPE (FcAppWindow, fc_app_window, GTK_TYPE_APPLICATION_WINDOW)
@@ -19,9 +21,24 @@ static void fc_app_window_init (FcAppWindow *window) {
 	gtk_widget_init_template (GTK_WIDGET (window));
 
   // Setup the drawing area, where the image and crop-boundaries are shown
-  GtkWidget *da = gtk_drawing_area_new ();
-  gtk_drawing_area_set_draw_func (GTK_DRAWING_AREA (da), update_screen, NULL, NULL);
-  gtk_window_set_child (GTK_WINDOW (window), da);
+  window->draw_area = gtk_drawing_area_new ();
+  gtk_drawing_area_set_draw_func (GTK_DRAWING_AREA (window->draw_area), update_screen, NULL, NULL);
+  gtk_window_set_child (GTK_WINDOW (window), window->draw_area);
+}
+
+/** Load the image file, and set up the window if the file is valid. */
+void fc_app_window_open_file (FcAppWindow *window, GFile *file) {
+  char *filepath = g_file_get_path (file);
+
+  // Exit early if the file does not exist
+  if (!g_file_query_exists (file, NULL)) {
+    g_print ("Could not open file: %s. Exiting", filepath);
+    gtk_window_close (GTK_WINDOW (window));
+  }
+
+  // Load the file into a pixbuf
+  window->source_pb = gdk_pixbuf_new_from_file (filepath, NULL);
+  free (filepath);
 }
 
 static void fc_app_window_class_init (FcAppWindowClass *class) {}
