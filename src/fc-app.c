@@ -37,7 +37,6 @@ static void fc_app_open (GApplication *app, GFile **files, int n_files, const ch
   // Setup the application window
   window = fc_app_window_new (GTK_APPLICATION (app));
   gtk_window_present (GTK_WINDOW (window));
-  gtk_window_set_title (GTK_WINDOW (window), "fastcrop");
   fc_app_window_open_file (window, files[0]);
 }
 

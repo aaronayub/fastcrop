@@ -44,7 +44,7 @@ static void update_screen (GtkDrawingArea *da, cairo_t *cr, int width, int heigh
 }
 
 static void fc_app_window_init (FcAppWindow *window) {
-	gtk_widget_init_template (GTK_WIDGET (window));
+  gtk_window_set_title (GTK_WINDOW (window), "fastcrop");
 
   // Setup the drawing area, where the image and crop-boundaries are shown
   window->draw_area = gtk_drawing_area_new ();
