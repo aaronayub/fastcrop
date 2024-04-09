@@ -31,3 +31,20 @@ typedef struct {
   int right;
   int bottom;
 } MotionParams;
+
+/** Returns a pointer to a new initialized MotionParams struct */
+MotionParams* motion_params_new (GtkDrawingArea *da, GdkPixbuf *pb,
+    CropArea *ca, MoveEdges me, int left, int top, int right, int bottom) {
+  MotionParams *mp = malloc(sizeof(MotionParams));
+
+  mp->draw_area = da;
+  mp->pixbuf = pb;
+  mp->crop_area = ca;
+  mp->move_edges = me;
+  mp->left = left;
+  mp->top = top;
+  mp->right = right;
+  mp->bottom = bottom;
+
+  return mp;
+}
