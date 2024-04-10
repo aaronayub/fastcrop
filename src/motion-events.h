@@ -11,11 +11,11 @@
 
 /** Edges of the crop region that the user can move */
 typedef enum {
-  fc_mv_null = 0,
-  fc_mv_top = 1,
-  fc_mv_bottom = 2,
-  fc_mv_left = 4,
-  fc_mv_right = 8,
+  FC_MV_NULL = 0,
+  FC_MV_TOP = 1,
+  FC_MV_BOTTOM = 2,
+  FC_MV_LEFT = 4,
+  FC_MV_RIGHT = 8,
 } MoveEdges;
 
 /** Parameters for motion events that control the crop region */
@@ -48,3 +48,13 @@ MotionParams* motion_params_new (GtkDrawingArea *da, GdkPixbuf *pb,
 
   return mp;
 }
+
+/** Event taking place when the user starts to drag an input device.
+ * Determines which parts of the CropArea are being adjusted.
+ * @param user_data A pointer to the MotionParams struct */
+void select_edges (GtkGestureDrag *self, gdouble x, gdouble y, gpointer user_data);
+
+/** Event taking place as the user continues to drag an input device.
+ * Updates the values of any selected edges based on the device position.
+ * @param user_data A pointer to the MotionParams struct */
+void update_edges (GtkGestureDrag *self, gdouble x, gdouble y, gpointer user_data);
