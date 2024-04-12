@@ -75,3 +75,19 @@ void update_edges (GtkGestureDrag *self, gdouble x, gdouble y, gpointer user_dat
 
   gtk_widget_queue_draw (da);
 }
+
+MotionParams* motion_params_new (GtkDrawingArea *da, GdkPixbuf *pb,
+    CropArea *ca, MoveEdges me, int left, int top, int right, int bottom) {
+  MotionParams *mp = malloc(sizeof(MotionParams));
+
+  mp->draw_area = da;
+  mp->pixbuf = pb;
+  mp->crop_area = ca;
+  mp->move_edges = me;
+  mp->left = left;
+  mp->top = top;
+  mp->right = right;
+  mp->bottom = bottom;
+
+  return mp;
+}
