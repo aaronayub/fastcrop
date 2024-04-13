@@ -75,11 +75,16 @@ void fc_app_window_open_file (FcAppWindow *window, GFile *file) {
   ca->width = gdk_pixbuf_get_width (pixbuf);
   ca->height = gdk_pixbuf_get_height (pixbuf);
 
-  MotionParams *mp = motion_params_new (GTK_DRAWING_AREA (window->draw_area), pixbuf, ca, fc_mv_null, 0, 0, gdk_pixbuf_get_width (pixbuf), gdk_pixbuf_get_height (pixbuf));
+  MotionParams *mp = motion_params_new (GTK_DRAWING_AREA (window->draw_area), pixbuf, ca, FC_MV_NULL, 0, 0, gdk_pixbuf_get_width (pixbuf), gdk_pixbuf_get_height (pixbuf));
 
   UpdateScreenParams *usp = malloc(sizeof(UpdateScreenParams));
   usp->pixbuf = pixbuf;
   usp->crop_area = ca;
+
+  GtkEventController *gesture_drag = GTK_EVENT_CONTROLLER (gtk_gesture_drag_new ());
+  g_signal_connect (gesture_drag, "drag-begin", G_CALLBACK (select_edges), mp);
+  g_signal_connect (gesture_drag, "drag-update", G_CALLBACK (update_edges), mp);
+  gtk_widget_add_controller (window->draw_area, gesture_drag);
 
   gtk_drawing_area_set_draw_func (GTK_DRAWING_AREA (window->draw_area), update_screen, usp, NULL);
 }
