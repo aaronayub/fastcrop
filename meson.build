@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 project('fastcrop', 'c',
-  version : '0.1',
+  version : '0.2.0',
   license: 'GPL-3.0-only',
   default_options : ['warning_level=3'])
 
