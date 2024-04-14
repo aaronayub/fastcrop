@@ -10,6 +10,8 @@
 struct _FcAppWindow {
 	GtkApplicationWindow parent;
   GtkWidget *draw_area;
+  GdkPixbuf *pixbuf;
+  CropArea *crop_area;
 };
 
 G_DEFINE_TYPE (FcAppWindow, fc_app_window, GTK_TYPE_APPLICATION_WINDOW)
@@ -46,12 +48,40 @@ static void update_screen (GtkDrawingArea *draw_area, cairo_t *cr, int width, in
   cairo_stroke (cr);
 }
 
+/** Crops the image and exits the program */
+static gboolean crop_cb (GtkEventController *self, guint keyval, guint keycode, GdkModifierType state, gpointer user_data) {
+  if (keyval != GDK_KEY_Return &&
+      keyval != GDK_KEY_KP_Enter &&
+      keyval != GDK_KEY_ISO_Enter) {
+    return false;
+  }
+
+  FcAppWindow *window = user_data;
+  CropArea *ca = window->crop_area;
+  GdkPixbuf *cropped = gdk_pixbuf_new_subpixbuf (window->pixbuf,
+      ca->x, ca->y, ca->width, ca->height);
+
+  gboolean success = gdk_pixbuf_save (
+      cropped, "cropped_image.jpg", "jpeg", NULL, NULL);
+  if (!success) {
+    g_printerr ("Failed to write to file!\n");
+  }
+
+  gtk_window_close (GTK_WINDOW (window));
+
+  return true;
+}
+
 static void fc_app_window_init (FcAppWindow *window) {
   gtk_window_set_title (GTK_WINDOW (window), "fastcrop");
 
   // Setup the drawing area, where the image and crop-boundaries are shown
   window->draw_area = gtk_drawing_area_new ();
   gtk_window_set_child (GTK_WINDOW (window), window->draw_area);
+
+  GtkEventController *controller = gtk_event_controller_key_new ();
+  g_signal_connect (controller, "key-pressed", G_CALLBACK (crop_cb), window);
+  gtk_widget_add_controller (GTK_WIDGET (window), controller);
 }
 
 /** Load the image file, and set up the window if the file is valid. */
@@ -66,6 +96,7 @@ void fc_app_window_open_file (FcAppWindow *window, GFile *file) {
 
   // Load the file into a pixbuf and initialize the crop-region from it
   GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file (filepath, NULL);
+  window->pixbuf = pixbuf;
   free (filepath);
 
   // Initialize parameter structs and set up callbacks using them
@@ -74,6 +105,8 @@ void fc_app_window_open_file (FcAppWindow *window, GFile *file) {
   ca->y = 0;
   ca->width = gdk_pixbuf_get_width (pixbuf);
   ca->height = gdk_pixbuf_get_height (pixbuf);
+
+  window->crop_area = ca;
 
   MotionParams *mp = motion_params_new (GTK_DRAWING_AREA (window->draw_area), pixbuf, ca, FC_MV_NULL, 0, 0, gdk_pixbuf_get_width (pixbuf), gdk_pixbuf_get_height (pixbuf));
 
