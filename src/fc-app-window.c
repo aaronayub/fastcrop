@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 #include <gtk/gtk.h>
+#include <string.h>
+
 #include "crop-area.h"
 #include "motion-events.h"
-
 #include "fc-app-window.h"
 
 struct _FcAppWindow {
@@ -12,6 +13,7 @@ struct _FcAppWindow {
   GtkWidget *draw_area;
   GdkPixbuf *pixbuf;
   CropArea *crop_area;
+  gchar *output_path;
 };
 
 G_DEFINE_TYPE (FcAppWindow, fc_app_window, GTK_TYPE_APPLICATION_WINDOW)
@@ -61,11 +63,25 @@ static gboolean crop_cb (GtkEventController *self, guint keyval, guint keycode, 
   GdkPixbuf *cropped = gdk_pixbuf_new_subpixbuf (window->pixbuf,
       ca->x, ca->y, ca->width, ca->height);
 
-  gboolean success = gdk_pixbuf_save (
-      cropped, "cropped_image.jpg", "jpeg", NULL, NULL);
-  if (!success) {
-    g_printerr ("Failed to write to file!\n");
+  gchar *basename = g_path_get_basename (window->output_path);
+  char *extension = strrchr (basename, '.');
+  if (!extension) {
+    g_printerr ("Error writing to file. Please ensure the output path has an extension and try again.\n");
+    exit (1);
   }
+  extension++;
+  if (!strcmp (extension, "jpg")) {
+    extension = "jpeg";
+  }
+
+  gboolean success = gdk_pixbuf_save (
+      cropped, window->output_path, extension, NULL, NULL);
+  if (!success) {
+    g_printerr ("Failed to write to file: %s!\n", window->output_path);
+    exit (1);
+  }
+
+  g_free (basename);
 
   gtk_window_close (GTK_WINDOW (window));
 
@@ -84,9 +100,10 @@ static void fc_app_window_init (FcAppWindow *window) {
   gtk_widget_add_controller (GTK_WIDGET (window), controller);
 }
 
-/** Load the image file, and set up the window if the file is valid. */
-void fc_app_window_open_file (FcAppWindow *window, GFile *file) {
+/** Load the image file, and set up the window if the paths are valid. */
+void fc_app_window_open_paths (FcAppWindow *window, GFile *file, GFile *output) {
   char *filepath = g_file_get_path (file);
+  window->output_path = g_file_get_path (output);;
 
   // Exit early if the file does not exist
   if (!g_file_query_exists (file, NULL)) {

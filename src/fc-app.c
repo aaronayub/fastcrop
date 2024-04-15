@@ -15,7 +15,7 @@ G_DEFINE_TYPE (FcApp, fc_app, GTK_TYPE_APPLICATION)
 
 /** Provide users with an error message if the app is opened with no files */
 static void fc_app_activate (GApplication *app) {
-	g_printerr ("Please provide the path of a file to be cropped with fastcrop.\n");
+    g_printerr ("Please run fastcrop with two arguments. A path of a file to be cropped, and the path for the output of the cropped file.\n");
 }
 
 static void quit_shortcut_cb (GSimpleAction *action, GVariant *parameter, gpointer app) {
@@ -27,6 +27,10 @@ static GActionEntry action_entries[] = {
 };
 
 static void fc_app_open (GApplication *app, GFile **files, int n_files, const char *hint) {
+  if (n_files < 2) {
+    g_printerr ("Please run fastcrop with two arguments. A path of a file to be cropped, and the path for the output of the cropped file.\n");
+    exit (1);
+  }
   FcAppWindow *window;
 
   // Setup all accelerators
@@ -37,7 +41,7 @@ static void fc_app_open (GApplication *app, GFile **files, int n_files, const ch
   // Setup the application window
   window = fc_app_window_new (GTK_APPLICATION (app));
   gtk_window_present (GTK_WINDOW (window));
-  fc_app_window_open_file (window, files[0]);
+  fc_app_window_open_paths (window, files[0], files[1]);
 }
 
 static void fc_app_class_init (FcAppClass *class) {
