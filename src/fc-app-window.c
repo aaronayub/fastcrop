@@ -13,6 +13,7 @@ struct _FcAppWindow {
   GtkWidget *draw_area;
   GdkPixbuf *pixbuf;
   CropArea *crop_area;
+  MotionParams *motion_params;
   gchar *output_path;
 };
 
@@ -23,6 +24,24 @@ typedef struct {
   GdkPixbuf *pixbuf;
   CropArea *crop_area;
 } UpdateScreenParams;
+
+/** Resets the crop area and motion params to select the entire image */
+static void reset_cb (GtkWidget *widget, GVariant *args, gpointer user_data) {
+  FcAppWindow *win = FC_APP_WINDOW (widget);
+  CropArea *ca = win->crop_area;
+  MotionParams *mp = win->motion_params;
+
+  mp->left = 0;
+  mp->top = 0;
+  mp->right = gdk_pixbuf_get_width (win->pixbuf);
+  mp->bottom = gdk_pixbuf_get_height (win->pixbuf);
+  ca->x = 0;
+  ca->y = 0;
+  ca->width = gdk_pixbuf_get_width (win->pixbuf);
+  ca->height = gdk_pixbuf_get_height (win->pixbuf);
+
+  gtk_widget_queue_draw (win->draw_area);
+}
 
 /** Update the draw area with the loaded image and cropping boundary-box */
 static void update_screen (GtkDrawingArea *draw_area, cairo_t *cr, int width, int height, gpointer user_data) {
@@ -126,6 +145,7 @@ void fc_app_window_open_paths (FcAppWindow *window, GFile *file, GFile *output) 
   window->crop_area = ca;
 
   MotionParams *mp = motion_params_new (GTK_DRAWING_AREA (window->draw_area), pixbuf, ca, FC_MV_NULL, 0, 0, gdk_pixbuf_get_width (pixbuf), gdk_pixbuf_get_height (pixbuf));
+  window->motion_params = mp;
 
   UpdateScreenParams *usp = malloc(sizeof(UpdateScreenParams));
   usp->pixbuf = pixbuf;
@@ -139,7 +159,12 @@ void fc_app_window_open_paths (FcAppWindow *window, GFile *file, GFile *output) 
   gtk_drawing_area_set_draw_func (GTK_DRAWING_AREA (window->draw_area), update_screen, usp, NULL);
 }
 
-static void fc_app_window_class_init (FcAppWindowClass *class) {}
+static void fc_app_window_class_init (FcAppWindowClass *class) {
+  GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (class);
+
+  gtk_widget_class_add_binding (widget_class, GDK_KEY_R, 0,
+      (GtkShortcutFunc) reset_cb, NULL);
+}
 
 FcAppWindow *fc_app_window_new (GtkApplication *app) {
 	return g_object_new (FC_APP_WINDOW_TYPE, "application", app, NULL);
