@@ -3,6 +3,7 @@
 
 #include <gtk/gtk.h>
 #include <string.h>
+#include <cairo.h>
 
 #include "crop-area.h"
 #include "motion-events.h"
@@ -54,6 +55,23 @@ static void update_screen (GtkDrawingArea *draw_area, cairo_t *cr, int width, in
   gdk_cairo_set_source_pixbuf (cr, pixbuf, 0, 0);
   cairo_paint (cr);
   g_object_unref (pixbuf);
+
+  // Set text and extens
+  char *dimensions = g_strdup_printf ("x: %d, y: %d, width: %d, height: %d", ca->x, ca->y, ca->width, ca->height);
+  cairo_text_extents_t te;
+  cairo_text_extents_t te_char;
+  cairo_set_font_size (cr, 24.0);
+  cairo_text_extents (cr, dimensions, &te);
+  cairo_text_extents (cr, "a", &te_char);
+
+  // Draw text and text background
+  cairo_set_source_rgba (cr, 0, 0, 0, 0.5);
+  cairo_rectangle (cr, 0, 0, te_char.width + te.width + te.x_bearing, te.height - te.y_bearing / 2);
+  cairo_fill (cr);
+  cairo_set_source_rgb (cr, 1, 1, 1);
+  cairo_move_to (cr, 0.5 * te_char.width, te.height);
+  cairo_show_text (cr, dimensions);
+  free (dimensions);
 
   // Draw the CropArea
   cairo_set_line_width (cr, 1.0);
