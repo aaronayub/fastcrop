@@ -16,6 +16,7 @@ struct _FcAppWindow {
   CropArea *crop_area;
   MotionParams *motion_params;
   gchar *output_path;
+  gboolean *show_text;
 };
 
 G_DEFINE_TYPE (FcAppWindow, fc_app_window, GTK_TYPE_APPLICATION_WINDOW)
@@ -24,7 +25,16 @@ G_DEFINE_TYPE (FcAppWindow, fc_app_window, GTK_TYPE_APPLICATION_WINDOW)
 typedef struct {
   GdkPixbuf *pixbuf;
   CropArea *crop_area;
+  gboolean *show_text;
 } UpdateScreenParams;
+
+/** Toggles the display of the crop area dimensions on the draw_area */
+static void toggle_text_cb (GtkWidget *widget, GVariant *args, gpointer user_data) {
+  FcAppWindow *win = FC_APP_WINDOW (widget);
+
+  *win->show_text = !*win->show_text;
+  gtk_widget_queue_draw (win->draw_area);
+}
 
 /** Resets the crop area and motion params to select the entire image */
 static void reset_cb (GtkWidget *widget, GVariant *args, gpointer user_data) {
@@ -56,22 +66,25 @@ static void update_screen (GtkDrawingArea *draw_area, cairo_t *cr, int width, in
   cairo_paint (cr);
   g_object_unref (pixbuf);
 
-  // Set text and extens
-  char *dimensions = g_strdup_printf ("x: %d, y: %d, width: %d, height: %d", ca->x, ca->y, ca->width, ca->height);
-  cairo_text_extents_t te;
-  cairo_text_extents_t te_char;
-  cairo_set_font_size (cr, 24.0);
-  cairo_text_extents (cr, dimensions, &te);
-  cairo_text_extents (cr, "a", &te_char);
+  // Print out the crop area dimensions if show_text is enabled
+  if (*params->show_text) {
+    // Set text and extens
+    char *dimensions = g_strdup_printf ("x: %d, y: %d, width: %d, height: %d", ca->x, ca->y, ca->width, ca->height);
+    cairo_text_extents_t te;
+    cairo_text_extents_t te_char;
+    cairo_set_font_size (cr, 24.0);
+    cairo_text_extents (cr, dimensions, &te);
+    cairo_text_extents (cr, "a", &te_char);
 
-  // Draw text and text background
-  cairo_set_source_rgba (cr, 0, 0, 0, 0.5);
-  cairo_rectangle (cr, 0, 0, te_char.width + te.width + te.x_bearing, te.height - te.y_bearing / 2);
-  cairo_fill (cr);
-  cairo_set_source_rgb (cr, 1, 1, 1);
-  cairo_move_to (cr, 0.5 * te_char.width, te.height);
-  cairo_show_text (cr, dimensions);
-  free (dimensions);
+    // Draw text and text background
+    cairo_set_source_rgba (cr, 0, 0, 0, 0.5);
+    cairo_rectangle (cr, 0, 0, te_char.width + te.width + te.x_bearing, te.height - te.y_bearing / 2);
+    cairo_fill (cr);
+    cairo_set_source_rgb (cr, 1, 1, 1);
+    cairo_move_to (cr, 0.5 * te_char.width, te.height);
+    cairo_show_text (cr, dimensions);
+    free (dimensions);
+  }
 
   // Draw the CropArea
   cairo_set_line_width (cr, 1.0);
@@ -154,6 +167,9 @@ void fc_app_window_open_paths (FcAppWindow *window, GFile *file, GFile *output) 
   free (filepath);
 
   // Initialize parameter structs and set up callbacks using them
+  window->show_text = malloc(sizeof(gboolean));
+  *window->show_text = FALSE;
+
   CropArea *ca = malloc(sizeof(CropArea));
   ca->x = 0;
   ca->y = 0;
@@ -168,6 +184,7 @@ void fc_app_window_open_paths (FcAppWindow *window, GFile *file, GFile *output) 
   UpdateScreenParams *usp = malloc(sizeof(UpdateScreenParams));
   usp->pixbuf = pixbuf;
   usp->crop_area = ca;
+  usp->show_text = window->show_text;
 
   GtkEventController *gesture_drag = GTK_EVENT_CONTROLLER (gtk_gesture_drag_new ());
   g_signal_connect (gesture_drag, "drag-begin", G_CALLBACK (select_edges), mp);
@@ -182,6 +199,8 @@ static void fc_app_window_class_init (FcAppWindowClass *class) {
 
   gtk_widget_class_add_binding (widget_class, GDK_KEY_R, 0,
       (GtkShortcutFunc) reset_cb, NULL);
+  gtk_widget_class_add_binding (widget_class, GDK_KEY_T, 0,
+      (GtkShortcutFunc) toggle_text_cb, NULL);
 }
 
 FcAppWindow *fc_app_window_new (GtkApplication *app) {
