@@ -1,6 +1,24 @@
 # Fastcrop 
 A very lightweight, visual, image-cropping tool.
 
+## Usage
+Run fastcrop with the file to read as the first argument, and the path to write to as the second:
+```
+fastcrop {INPUT} {OUTPUT}
+```
+
+The output path can be the same as the input, in which case, the image will be overwritten.
+
+In the window that appears, the image to crop will be displayed, along with a rectangle that spans the image. By dragging the mouse near one of the sides or corners of the rectangle, you can change the area of the image to be cropped. You will see the rectangle update accordingly. Press Enter to crop the image, which will additionally close the window. 
+
+### Keyboard Shortcuts
+|Key   |Action                  |
+|------|------------------------|
+|Enter |Crop the image and exit |
+|q     |Quit                    |
+|r     |Reset crop area         |
+|t     |Toggle text display     |
+
 ## Installation
 To install this project, run the following.
 ```
