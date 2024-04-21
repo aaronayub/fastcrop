@@ -8,7 +8,7 @@
 #include "fc-app-window.h"
 
 struct _FcApp {
-	GtkApplication parent;
+  GtkApplication parent;
 };
 
 G_DEFINE_TYPE (FcApp, fc_app, GTK_TYPE_APPLICATION)
@@ -19,11 +19,11 @@ static void fc_app_activate (GApplication *app) {
 }
 
 static void quit_shortcut_cb (GSimpleAction *action, GVariant *parameter, gpointer app) {
-	g_application_quit (G_APPLICATION (app));
+  g_application_quit (G_APPLICATION (app));
 }
 
 static GActionEntry action_entries[] = {
-	{"quit", quit_shortcut_cb, NULL, NULL, NULL, NULL}
+  {"quit", quit_shortcut_cb, NULL, NULL, NULL, NULL}
 };
 
 static void fc_app_open (GApplication *app, GFile **files, int n_files, const char *hint) {
@@ -34,7 +34,7 @@ static void fc_app_open (GApplication *app, GFile **files, int n_files, const ch
   FcAppWindow *window;
 
   // Setup all accelerators
-	g_action_map_add_action_entries (G_ACTION_MAP (app), action_entries, G_N_ELEMENTS (action_entries), app);
+  g_action_map_add_action_entries (G_ACTION_MAP (app), action_entries, G_N_ELEMENTS (action_entries), app);
   const char *accels[3] = {"q", "<Control>q", NULL};
   gtk_application_set_accels_for_action (GTK_APPLICATION (app), "app.quit", accels);
 
@@ -45,7 +45,7 @@ static void fc_app_open (GApplication *app, GFile **files, int n_files, const ch
 }
 
 static void fc_app_class_init (FcAppClass *class) {
-	GApplicationClass *app_class = G_APPLICATION_CLASS (class);
+  GApplicationClass *app_class = G_APPLICATION_CLASS (class);
   app_class->activate = fc_app_activate;
   app_class->open = fc_app_open;
 }
@@ -53,5 +53,5 @@ static void fc_app_class_init (FcAppClass *class) {
 static void fc_app_init (FcApp *app) {}
 
 FcApp *fc_app_new (void) {
-	return g_object_new (FC_APP_TYPE, "application-id", "com.github.aaronayub.fastcrop", "flags", G_APPLICATION_HANDLES_OPEN, NULL);
+  return g_object_new (FC_APP_TYPE, "application-id", "com.github.aaronayub.fastcrop", "flags", G_APPLICATION_HANDLES_OPEN, NULL);
 }

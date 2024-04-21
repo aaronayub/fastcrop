@@ -10,7 +10,7 @@
 #include "fc-app-window.h"
 
 struct _FcAppWindow {
-	GtkApplicationWindow parent;
+  GtkApplicationWindow parent;
   GtkWidget *draw_area;
   GdkPixbuf *pixbuf;
   CropArea *crop_area;
@@ -204,5 +204,5 @@ static void fc_app_window_class_init (FcAppWindowClass *class) {
 }
 
 FcAppWindow *fc_app_window_new (GtkApplication *app) {
-	return g_object_new (FC_APP_WINDOW_TYPE, "application", app, NULL);
+  return g_object_new (FC_APP_WINDOW_TYPE, "application", app, NULL);
 }

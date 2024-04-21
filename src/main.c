@@ -5,5 +5,5 @@
 #include "fc-app.h"
 
 int main (int argc, char *argv[]) {
-	return g_application_run (G_APPLICATION (fc_app_new ()), argc, argv);
+  return g_application_run (G_APPLICATION (fc_app_new ()), argc, argv);
 }
