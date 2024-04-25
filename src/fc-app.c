@@ -23,7 +23,7 @@ static void quit_shortcut_cb (GSimpleAction *action, GVariant *parameter, gpoint
 }
 
 static GActionEntry action_entries[] = {
-  {"quit", quit_shortcut_cb, NULL, NULL, NULL, NULL}
+  { .name = "quit", .activate = quit_shortcut_cb }
 };
 
 static void fc_app_open (GApplication *app, GFile **files, int n_files, const char *hint) {
