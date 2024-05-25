@@ -1,0 +1,7 @@
+# Copyright (c) 2024 Aaron Ayub
+# SPDX-License-Identifier: GPL-3.0-only
+
+option('MagickWand',
+  type : 'feature',
+  value : 'auto',
+  description : 'Enable encoding output files with MagickWand')
