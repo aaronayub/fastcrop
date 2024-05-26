@@ -12,3 +12,6 @@ FcAppWindow *fc_app_window_new (GtkApplication *app);
 
 /** Load the image file, and set up the window if the file is valid. */
 void fc_app_window_open_paths (FcAppWindow *window, GFile *file, GFile *output);
+
+/** Apply all command-line options to the app window */
+void fc_app_window_apply_options (FcAppWindow *window, gboolean magick);

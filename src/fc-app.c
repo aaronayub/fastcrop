@@ -4,6 +4,7 @@
 #include <gtk/gtk.h>
 #include <cairo.h>
 
+#include "config.h"
 #include "fc-app.h"
 #include "fc-app-window.h"
 
@@ -13,9 +14,12 @@ struct _FcApp {
 
 G_DEFINE_TYPE (FcApp, fc_app, GTK_TYPE_APPLICATION)
 
+/** Options */
+gboolean magick = FALSE;
+
 /** Provide users with an error message if the app is opened with no files */
 static void fc_app_activate (GApplication *app) {
-    g_printerr ("Please run fastcrop with two arguments. A path of a file to be cropped, and the path for the output of the cropped file.\n");
+  g_printerr ("Please run fastcrop with two arguments. A path of a file to be cropped, and the path for the output of the cropped file.\n");
 }
 
 static void quit_shortcut_cb (GSimpleAction *action, GVariant *parameter, gpointer app) {
@@ -25,6 +29,14 @@ static void quit_shortcut_cb (GSimpleAction *action, GVariant *parameter, gpoint
 static GActionEntry action_entries[] = {
   { .name = "quit", .activate = quit_shortcut_cb }
 };
+
+static gint fc_app_handle_local_options (GApplication *app, GVariantDict *options) {
+  if (g_variant_dict_contains (options, "magick")) {
+    magick = TRUE;
+  }
+
+  return -1;
+}
 
 static void fc_app_open (GApplication *app, GFile **files, int n_files, const char *hint) {
   if (n_files < 2) {
@@ -41,16 +53,27 @@ static void fc_app_open (GApplication *app, GFile **files, int n_files, const ch
   // Setup the application window
   window = fc_app_window_new (GTK_APPLICATION (app));
   gtk_window_present (GTK_WINDOW (window));
+  fc_app_window_apply_options (window, magick);
   fc_app_window_open_paths (window, files[0], files[1]);
 }
 
 static void fc_app_class_init (FcAppClass *class) {
   GApplicationClass *app_class = G_APPLICATION_CLASS (class);
+  app_class->handle_local_options = fc_app_handle_local_options;
   app_class->activate = fc_app_activate;
   app_class->open = fc_app_open;
 }
 
-static void fc_app_init (FcApp *app) {}
+static void fc_app_init (FcApp *app) {
+  const GOptionEntry options[] = {
+#ifdef DEP_MAGICK
+    {"magick", 'm', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL,
+      "Encode output files with MagickWand. Requires ImageMagick >=7.0.", NULL},
+#endif
+    {NULL}
+  };
+  g_application_add_main_option_entries (G_APPLICATION (app), options);
+}
 
 FcApp *fc_app_new (void) {
   return g_object_new (FC_APP_TYPE, "application-id", "com.github.aaronayub.fastcrop", "flags", G_APPLICATION_HANDLES_OPEN, NULL);

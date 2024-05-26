@@ -17,6 +17,7 @@ struct _FcAppWindow {
   MotionParams *motion_params;
   gchar *output_path;
   gboolean *show_text;
+  gboolean magick;
 };
 
 G_DEFINE_TYPE (FcAppWindow, fc_app_window, GTK_TYPE_APPLICATION_WINDOW)
@@ -136,6 +137,10 @@ static gboolean crop_cb (GtkEventController *self, guint keyval, guint keycode, 
   gtk_window_close (GTK_WINDOW (window));
 
   return true;
+}
+
+void fc_app_window_apply_options (FcAppWindow *window, gboolean magick) {
+  window->magick = magick;
 }
 
 static void fc_app_window_init (FcAppWindow *window) {
