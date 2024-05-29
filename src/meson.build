@@ -7,3 +7,8 @@ sources = files([
   'main.c',
   'motion-events.c',
 ])
+
+# Sources for optional dependencies
+if magick.found()
+  sources += files(['./lib/magick.c'])
+endif

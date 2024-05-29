@@ -8,6 +8,7 @@
 #include "crop-area.h"
 #include "motion-events.h"
 #include "fc-app-window.h"
+#include "lib/magick.h"
 
 struct _FcAppWindow {
   GtkApplicationWindow parent;
@@ -15,6 +16,7 @@ struct _FcAppWindow {
   GdkPixbuf *pixbuf;
   CropArea *crop_area;
   MotionParams *motion_params;
+  gchar *input_path;
   gchar *output_path;
   gboolean *show_text;
   gboolean magick;
@@ -111,31 +113,38 @@ static gboolean crop_cb (GtkEventController *self, guint keyval, guint keycode, 
 
   FcAppWindow *window = user_data;
   CropArea *ca = window->crop_area;
-  GdkPixbuf *cropped = gdk_pixbuf_new_subpixbuf (window->pixbuf,
-      ca->x, ca->y, ca->width, ca->height);
+  gboolean error;
 
-  gchar *basename = g_path_get_basename (window->output_path);
-  char *extension = strrchr (basename, '.');
-  if (!extension) {
-    g_printerr ("Error writing to file. Please ensure the output path has an extension and try again.\n");
-    exit (1);
+  /** ImageMagick crop */
+  if (window->magick) {
+    error = crop_magick (ca->width, ca->height, ca->x, ca->y,
+        window->input_path, window->output_path);
   }
-  extension++;
-  if (!strcmp (extension, "jpg")) {
-    extension = "jpeg";
+  /** Default crop (GDK) */
+  else {
+    GdkPixbuf *cropped = gdk_pixbuf_new_subpixbuf (window->pixbuf,
+        ca->x, ca->y, ca->width, ca->height);
+
+    gchar *basename = g_path_get_basename (window->output_path);
+    char *extension = strrchr (basename, '.');
+    if (!extension) {
+      g_printerr ("Error writing to file. Please ensure the output path has an extension and try again.\n");
+      exit (1);
+    }
+    extension++;
+    if (!strcmp (extension, "jpg")) {
+      extension = "jpeg";
+    }
+
+    error = !gdk_pixbuf_save (cropped, window->output_path, extension, NULL, NULL);
+    g_free (basename);
   }
 
-  gboolean success = gdk_pixbuf_save (
-      cropped, window->output_path, extension, NULL, NULL);
-  if (!success) {
+  if (error) {
     g_printerr ("Failed to write to file: %s!\n", window->output_path);
-    exit (1);
   }
-
-  g_free (basename);
 
   gtk_window_close (GTK_WINDOW (window));
-
   return true;
 }
 
@@ -158,6 +167,7 @@ static void fc_app_window_init (FcAppWindow *window) {
 /** Load the image file, and set up the window if the paths are valid. */
 void fc_app_window_open_paths (FcAppWindow *window, GFile *file, GFile *output) {
   char *filepath = g_file_get_path (file);
+  window->input_path = g_file_get_path (file);
   window->output_path = g_file_get_path (output);;
 
   // Exit early if the file does not exist
