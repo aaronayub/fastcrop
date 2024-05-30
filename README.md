@@ -9,7 +9,12 @@ fastcrop {INPUT} {OUTPUT}
 
 The output path can be the same as the input, in which case, the image will be overwritten.
 
-In the window that appears, the image to crop will be displayed, along with a rectangle that spans the image. By dragging the mouse near one of the sides or corners of the rectangle, you can change the area of the image to be cropped. You will see the rectangle update accordingly. Press Enter to crop the image, which will additionally close the window. 
+In the window that appears, the image to crop will be displayed, along with a rectangle that spans the image. By dragging the mouse near one of the sides or corners of the rectangle, you can change the area of the image to be cropped. You will see the rectangle update accordingly. Press Enter to crop the image, which will additionally close the window.
+
+To view available application options, enter:
+```
+fastcrop --help
+```
 
 ### Keyboard Shortcuts
 |Key   |Action                  |
@@ -33,7 +38,8 @@ meson setup build && ninja -C build
 This will create the executable file 'fastcrop' in the build directory.
 
 ## Build Requirements
-- GTK4
+- GTK >= 4.0
+- ImageMagick >= 7.0 (Optional, allows for writing output with ImageMagick)
 - meson
 
 ## License
