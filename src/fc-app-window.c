@@ -8,7 +8,11 @@
 #include "crop-area.h"
 #include "motion-events.h"
 #include "fc-app-window.h"
+#include "config.h"
+
+#ifdef DEP_MAGICK
 #include "lib/magick.h"
+#endif
 
 struct _FcAppWindow {
   GtkApplicationWindow parent;
@@ -113,12 +117,16 @@ static gboolean crop_cb (GtkEventController *self, guint keyval, guint keycode, 
 
   FcAppWindow *window = user_data;
   CropArea *ca = window->crop_area;
-  gboolean error;
+  gboolean error = true;
 
   /** ImageMagick crop */
   if (window->magick) {
+#ifdef DEP_MAGICK
     error = crop_magick (ca->width, ca->height, ca->x, ca->y,
         window->input_path, window->output_path);
+#else
+    g_printerr ("ImageMagick is not installed. Exiting.\n");
+#endif
   }
   /** Default crop (GDK) */
   else {
