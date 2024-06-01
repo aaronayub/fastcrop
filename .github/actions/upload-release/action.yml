@@ -1,0 +1,27 @@
+name: upload-release
+description: "Packages and uploads a release"
+inputs:
+  distro:
+    required: true
+    description: "Distro used to build the package"
+runs:
+  using: "composite"
+  steps:
+    - name: package
+      shell: bash
+      run: |
+        mv build/fastcrop fastcrop
+        tar -czf fastcrop.tar.gz README.md COPYING fastcrop
+    - uses: "actions/github-script@v7"
+      env:
+        RELEASE_ID: ${{github.event.release.id}}
+      with:
+        script: |
+          const fs = require('fs');
+          await github.rest.repos.uploadReleaseAsset({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            release_id: process.env.RELEASE_ID,
+            name: "fastcrop_" + process.env.GITHUB_REF_NAME + "_${{inputs.distro}}" + ".tar.gz",
+            data: fs.readFileSync("fastcrop.tar.gz")
+          });
