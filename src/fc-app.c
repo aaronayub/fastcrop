@@ -7,15 +7,14 @@
 #include "config.h"
 #include "fc-app.h"
 #include "fc-app-window.h"
+#include "fc-options.h"
 
 struct _FcApp {
   GtkApplication parent;
+  FcOptions *options;
 };
 
 G_DEFINE_TYPE (FcApp, fc_app, GTK_TYPE_APPLICATION)
-
-/** Options */
-gboolean magick = FALSE;
 
 /** Provide users with an error message if the app is opened with no files */
 static void fc_app_activate (GApplication *app) {
@@ -31,8 +30,9 @@ static GActionEntry action_entries[] = {
 };
 
 static gint fc_app_handle_local_options (GApplication *app, GVariantDict *options) {
+  FcApp *fc_app = FC_APP (app);
   if (g_variant_dict_contains (options, "magick")) {
-    magick = TRUE;
+    fc_app->options->magick = TRUE;
   }
 
   return -1;
@@ -53,7 +53,7 @@ static void fc_app_open (GApplication *app, GFile **files, int n_files, const ch
   // Setup the application window
   window = fc_app_window_new (GTK_APPLICATION (app));
   gtk_window_present (GTK_WINDOW (window));
-  fc_app_window_apply_options (window, magick);
+  fc_app_window_apply_options (window, FC_APP (app)->options);
   fc_app_window_open_paths (window, files[0], files[1]);
 }
 
@@ -65,6 +65,11 @@ static void fc_app_class_init (FcAppClass *class) {
 }
 
 static void fc_app_init (FcApp *app) {
+  // Set default options
+  app->options = malloc (sizeof (FcOptions));
+  app->options->magick = FALSE;
+
+  // Define program options
   const GOptionEntry options[] = {
 #ifdef DEP_MAGICK
     {"magick", 'm', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL,

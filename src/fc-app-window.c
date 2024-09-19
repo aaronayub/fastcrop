@@ -9,6 +9,7 @@
 #include "motion-events.h"
 #include "fc-app-window.h"
 #include "config.h"
+#include "fc-options.h"
 
 #ifdef DEP_MAGICK
 #include "lib/magick.h"
@@ -23,7 +24,7 @@ struct _FcAppWindow {
   gchar *input_path;
   gchar *output_path;
   gboolean *show_text;
-  gboolean magick;
+  FcOptions *options;
 };
 
 G_DEFINE_TYPE (FcAppWindow, fc_app_window, GTK_TYPE_APPLICATION_WINDOW)
@@ -120,7 +121,7 @@ static gboolean crop_cb (GtkEventController *self, guint keyval, guint keycode, 
   gboolean error = true;
 
   /** ImageMagick crop */
-  if (window->magick) {
+  if (window->options->magick) {
 #ifdef DEP_MAGICK
     error = crop_magick (ca->width, ca->height, ca->x, ca->y,
         window->input_path, window->output_path);
@@ -156,8 +157,8 @@ static gboolean crop_cb (GtkEventController *self, guint keyval, guint keycode, 
   return true;
 }
 
-void fc_app_window_apply_options (FcAppWindow *window, gboolean magick) {
-  window->magick = magick;
+void fc_app_window_apply_options (FcAppWindow *window, FcOptions *options) {
+  window->options = options;
 }
 
 static void fc_app_window_init (FcAppWindow *window) {
