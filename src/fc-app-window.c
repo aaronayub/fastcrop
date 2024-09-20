@@ -117,11 +117,17 @@ static gboolean crop_cb (GtkEventController *self, guint keyval, guint keycode, 
   }
 
   FcAppWindow *window = user_data;
+  FcOptions *options = window->options;
   CropArea *ca = window->crop_area;
   gboolean error = true;
 
+  /** Print dimensions if requested */
+  if (options->dimensions) {
+    g_print ("%dx%d+%d+%d", ca->width, ca->height, ca->x, ca->y);
+  }
+
   /** ImageMagick crop */
-  if (window->options->magick) {
+  if (options->magick) {
 #ifdef DEP_MAGICK
     error = crop_magick (ca->width, ca->height, ca->x, ca->y,
         window->input_path, window->output_path);

@@ -31,6 +31,9 @@ static GActionEntry action_entries[] = {
 
 static gint fc_app_handle_local_options (GApplication *app, GVariantDict *options) {
   FcApp *fc_app = FC_APP (app);
+  if (g_variant_dict_contains (options, "dimensions")) {
+    fc_app->options->dimensions = TRUE;
+  }
   if (g_variant_dict_contains (options, "magick")) {
     fc_app->options->magick = TRUE;
   }
@@ -71,6 +74,8 @@ static void fc_app_init (FcApp *app) {
 
   // Define program options
   const GOptionEntry options[] = {
+    {"dimensions", 'd', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL,
+      "Print output dimensions to standard output in the format of WxH+X+Y", NULL},
 #ifdef DEP_MAGICK
     {"magick", 'm', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL,
       "Encode output files with MagickWand. Requires ImageMagick >=7.0.", NULL},

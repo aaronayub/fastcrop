@@ -9,4 +9,5 @@
 
 typedef struct {
   gboolean magick;
+  gboolean dimensions;
 } FcOptions;
