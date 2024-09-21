@@ -11,8 +11,8 @@ G_DECLARE_FINAL_TYPE (FcAppWindow, fc_app_window, FC, APP_WINDOW, GtkApplication
 
 FcAppWindow *fc_app_window_new (GtkApplication *app);
 
-/** Load the image file, and set up the window if the file is valid. */
-void fc_app_window_open_paths (FcAppWindow *window, GFile *file, GFile *output);
+/** Load the image file, and set up the window if the path is valid. */
+void fc_app_window_open_input (FcAppWindow *window, GFile *file);
 
 /** Apply all command-line options to the app window */
 void fc_app_window_apply_options (FcAppWindow *window, FcOptions *options);

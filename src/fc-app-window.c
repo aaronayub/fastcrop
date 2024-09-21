@@ -22,7 +22,6 @@ struct _FcAppWindow {
   CropArea *crop_area;
   MotionParams *motion_params;
   gchar *input_path;
-  gchar *output_path;
   gboolean *show_text;
   FcOptions *options;
 };
@@ -118,6 +117,7 @@ static gboolean crop_cb (GtkEventController *self, guint keyval, guint keycode, 
 
   FcAppWindow *window = user_data;
   FcOptions *options = window->options;
+  gchar *out_path = options->output_path;
   CropArea *ca = window->crop_area;
   gboolean error = true;
 
@@ -126,37 +126,39 @@ static gboolean crop_cb (GtkEventController *self, guint keyval, guint keycode, 
     g_print ("%dx%d+%d+%d", ca->width, ca->height, ca->x, ca->y);
   }
 
-  /** ImageMagick crop */
-  if (options->magick) {
+  if (out_path != NULL) {
+    /** ImageMagick crop */
+    if (options->magick) {
 #ifdef DEP_MAGICK
-    error = crop_magick (ca->width, ca->height, ca->x, ca->y,
-        window->input_path, window->output_path);
+      error = crop_magick (ca->width, ca->height, ca->x, ca->y,
+          window->input_path, out_path);
 #else
-    g_printerr ("ImageMagick is not installed. Exiting.\n");
+      g_printerr ("ImageMagick is not installed. Exiting.\n");
 #endif
-  }
-  /** Default crop (GDK) */
-  else {
-    GdkPixbuf *cropped = gdk_pixbuf_new_subpixbuf (window->pixbuf,
-        ca->x, ca->y, ca->width, ca->height);
-
-    gchar *basename = g_path_get_basename (window->output_path);
-    char *extension = strrchr (basename, '.');
-    if (!extension) {
-      g_printerr ("Error writing to file. Please ensure the output path has an extension and try again.\n");
-      exit (1);
     }
-    extension++;
-    if (!strcmp (extension, "jpg")) {
-      extension = "jpeg";
+    /** Default crop (GDK) */
+    else {
+      GdkPixbuf *cropped = gdk_pixbuf_new_subpixbuf (window->pixbuf,
+          ca->x, ca->y, ca->width, ca->height);
+
+      gchar *basename = g_path_get_basename (out_path);
+      char *extension = strrchr (basename, '.');
+      if (!extension) {
+        g_printerr ("Error writing to file. Please ensure the output path has an extension and try again.\n");
+        exit (1);
+      }
+      extension++;
+      if (!strcmp (extension, "jpg")) {
+        extension = "jpeg";
+      }
+
+      error = !gdk_pixbuf_save (cropped, out_path, extension, NULL, NULL);
+      g_free (basename);
     }
 
-    error = !gdk_pixbuf_save (cropped, window->output_path, extension, NULL, NULL);
-    g_free (basename);
-  }
-
-  if (error) {
-    g_printerr ("Failed to write to file: %s!\n", window->output_path);
+    if (error) {
+      g_printerr ("Failed to write to file: %s!\n", out_path);
+    }
   }
 
   gtk_window_close (GTK_WINDOW (window));
@@ -179,11 +181,10 @@ static void fc_app_window_init (FcAppWindow *window) {
   gtk_widget_add_controller (GTK_WIDGET (window), controller);
 }
 
-/** Load the image file, and set up the window if the paths are valid. */
-void fc_app_window_open_paths (FcAppWindow *window, GFile *file, GFile *output) {
+/** Load the image file, and set up the window if the path is valid. */
+void fc_app_window_open_input (FcAppWindow *window, GFile *file) {
   char *filepath = g_file_get_path (file);
   window->input_path = g_file_get_path (file);
-  window->output_path = g_file_get_path (output);;
 
   // Exit early if the file does not exist
   if (!g_file_query_exists (file, NULL)) {

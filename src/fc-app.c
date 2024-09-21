@@ -18,7 +18,7 @@ G_DEFINE_TYPE (FcApp, fc_app, GTK_TYPE_APPLICATION)
 
 /** Provide users with an error message if the app is opened with no files */
 static void fc_app_activate (GApplication *app) {
-  g_printerr ("Please run fastcrop with two arguments. A path of a file to be cropped, and the path for the output of the cropped file.\n");
+  g_printerr ("Please provide the path of an image file to be cropped in order to run fastcrop.\n");
 }
 
 static void quit_shortcut_cb (GSimpleAction *action, GVariant *parameter, gpointer app) {
@@ -42,11 +42,17 @@ static gint fc_app_handle_local_options (GApplication *app, GVariantDict *option
 }
 
 static void fc_app_open (GApplication *app, GFile **files, int n_files, const char *hint) {
-  if (n_files < 2) {
-    g_printerr ("Please run fastcrop with two arguments. A path of a file to be cropped, and the path for the output of the cropped file.\n");
+  FcAppWindow *window;
+  FcOptions *options = FC_APP (app)->options;
+
+  if (n_files < 2 && !options->dimensions ) {
+    g_printerr ("Please provide an additional path where you would like to write the cropped image.\n");
     exit (1);
   }
-  FcAppWindow *window;
+
+  if (n_files == 2) {
+    options->output_path = g_file_get_path (files[1]);
+  }
 
   // Setup all accelerators
   g_action_map_add_action_entries (G_ACTION_MAP (app), action_entries, G_N_ELEMENTS (action_entries), app);
@@ -56,8 +62,8 @@ static void fc_app_open (GApplication *app, GFile **files, int n_files, const ch
   // Setup the application window
   window = fc_app_window_new (GTK_APPLICATION (app));
   gtk_window_present (GTK_WINDOW (window));
-  fc_app_window_apply_options (window, FC_APP (app)->options);
-  fc_app_window_open_paths (window, files[0], files[1]);
+  fc_app_window_apply_options (window, options);
+  fc_app_window_open_input (window, files[0]);
 }
 
 static void fc_app_class_init (FcAppClass *class) {
@@ -71,6 +77,8 @@ static void fc_app_init (FcApp *app) {
   // Set default options
   app->options = malloc (sizeof (FcOptions));
   app->options->magick = FALSE;
+  app->options->dimensions = FALSE;
+  app->options->output_path = NULL;
 
   // Define program options
   const GOptionEntry options[] = {

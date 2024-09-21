@@ -10,4 +10,5 @@
 typedef struct {
   gboolean magick;
   gboolean dimensions;
+  gchar *output_path;
 } FcOptions;

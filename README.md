@@ -11,6 +11,8 @@ The output path can be the same as the input, in which case, the image will be o
 
 In the window that appears, the image to crop will be displayed, along with a rectangle that spans the image. By dragging the mouse near one of the sides or corners of the rectangle, you can change the area of the image to be cropped. You will see the rectangle update accordingly. Press Enter to crop the image, which will additionally close the window.
 
+Fastcrop can optionally be run with the --dimensions command line argument, which will print the dimensions to standard output WxH+X+Y format, compatible with other programs. If this argument is chosen, an output path is not required to run the program.
+
 To view available application options, enter:
 ```
 fastcrop --help
