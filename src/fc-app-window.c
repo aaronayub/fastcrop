@@ -22,7 +22,6 @@ struct _FcAppWindow {
   CropArea *crop_area;
   MotionParams *motion_params;
   gchar *input_path;
-  gboolean *show_text;
   FcOptions *options;
 };
 
@@ -39,7 +38,7 @@ typedef struct {
 static void toggle_text_cb (GtkWidget *widget, GVariant *args, gpointer user_data) {
   FcAppWindow *win = FC_APP_WINDOW (widget);
 
-  *win->show_text = !*win->show_text;
+  win->options->text = !win->options->text;
   gtk_widget_queue_draw (win->draw_area);
 }
 
@@ -197,10 +196,6 @@ void fc_app_window_open_input (FcAppWindow *window, GFile *file) {
   window->pixbuf = pixbuf;
   free (filepath);
 
-  // Initialize parameter structs and set up callbacks using them
-  window->show_text = malloc(sizeof(gboolean));
-  *window->show_text = FALSE;
-
   CropArea *ca = malloc(sizeof(CropArea));
   ca->x = 0;
   ca->y = 0;
@@ -215,7 +210,7 @@ void fc_app_window_open_input (FcAppWindow *window, GFile *file) {
   UpdateScreenParams *usp = malloc(sizeof(UpdateScreenParams));
   usp->pixbuf = pixbuf;
   usp->crop_area = ca;
-  usp->show_text = window->show_text;
+  usp->show_text = &window->options->text;
 
   GtkEventController *gesture_drag = GTK_EVENT_CONTROLLER (gtk_gesture_drag_new ());
   g_signal_connect (gesture_drag, "drag-begin", G_CALLBACK (select_edges), mp);

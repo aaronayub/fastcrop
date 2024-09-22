@@ -37,6 +37,9 @@ static gint fc_app_handle_local_options (GApplication *app, GVariantDict *option
   if (g_variant_dict_contains (options, "magick")) {
     fc_app->options->magick = TRUE;
   }
+  if (g_variant_dict_contains (options, "text")) {
+    fc_app->options->text = TRUE;
+  }
 
   return -1;
 }
@@ -76,8 +79,9 @@ static void fc_app_class_init (FcAppClass *class) {
 static void fc_app_init (FcApp *app) {
   // Set default options
   app->options = malloc (sizeof (FcOptions));
-  app->options->magick = FALSE;
   app->options->dimensions = FALSE;
+  app->options->magick = FALSE;
+  app->options->text = FALSE;
   app->options->output_path = NULL;
 
   // Define program options
@@ -87,6 +91,8 @@ static void fc_app_init (FcApp *app) {
 #ifdef DEP_MAGICK
     {"magick", 'm', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL,
       "Encode output files with MagickWand. Requires ImageMagick >=7.0.", NULL},
+    {"text", 't', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL,
+      "Show a text display of the image and crop-area dimensions in the top-left corner.", NULL},
 #endif
     {NULL}
   };
