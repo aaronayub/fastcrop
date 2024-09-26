@@ -31,15 +31,9 @@ static GActionEntry action_entries[] = {
 
 static gint fc_app_handle_local_options (GApplication *app, GVariantDict *options) {
   FcApp *fc_app = FC_APP (app);
-  if (g_variant_dict_contains (options, "dimensions")) {
-    fc_app->options->dimensions = TRUE;
-  }
-  if (g_variant_dict_contains (options, "magick")) {
-    fc_app->options->magick = TRUE;
-  }
-  if (g_variant_dict_contains (options, "text")) {
-    fc_app->options->text = TRUE;
-  }
+  fc_app->options->dimensions = (g_variant_dict_contains (options, "dimensions"));
+  fc_app->options->magick = (g_variant_dict_contains (options, "magick"));
+  fc_app->options->text = (g_variant_dict_contains (options, "text"));
 
   return -1;
 }
@@ -79,9 +73,6 @@ static void fc_app_class_init (FcAppClass *class) {
 static void fc_app_init (FcApp *app) {
   // Set default options
   app->options = malloc (sizeof (FcOptions));
-  app->options->dimensions = FALSE;
-  app->options->magick = FALSE;
-  app->options->text = FALSE;
   app->options->output_path = NULL;
 
   // Define program options
