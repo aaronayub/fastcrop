@@ -28,7 +28,14 @@ int crop_magick (int width, int height, int x, int y,
     return 1;
   };
 
-  // Write the cropped image
+  // Ignore previous page canvas if available, as fastcrop does not display the canvas.
+  status = MagickResetImagePage (wand, NULL);
+  if (status == MagickFalse) {
+    onMagickError (wand);
+    return 1;
+  };
+
+  // Crop the image
   MagickCropImage (wand, width, height, x, y);
   status = MagickSetCompressionQuality (wand, 100);
   if (status == MagickFalse) {
@@ -36,6 +43,14 @@ int crop_magick (int width, int height, int x, int y,
     return 1;
   };
 
+  // Avoid writing a page canvas for consistency
+  status = MagickResetImagePage (wand, NULL);
+  if (status == MagickFalse) {
+    onMagickError (wand);
+    return 1;
+  };
+
+  // Write the cropped image
   status = MagickWriteImage (wand, output_path);
   if (status == MagickFalse) {
     onMagickError (wand);
