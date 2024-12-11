@@ -91,5 +91,5 @@ static void fc_app_init (FcApp *app) {
 }
 
 FcApp *fc_app_new (void) {
-  return g_object_new (FC_APP_TYPE, "application-id", "com.github.aaronayub.fastcrop", "flags", G_APPLICATION_HANDLES_OPEN, NULL);
+  return g_object_new (FC_APP_TYPE, "application-id", "com.github.aaronayub.fastcrop", "flags", G_APPLICATION_HANDLES_OPEN|G_APPLICATION_NON_UNIQUE, NULL);
 }
