@@ -8,7 +8,7 @@
 #include <gtk/gtk.h>
 
 typedef struct {
-  gboolean dimensions;
+  gchar *dimensions;
   gboolean magick;
   gboolean text;
   gchar *output_path;

@@ -122,7 +122,23 @@ static gboolean crop_cb (GtkEventController *self, guint keyval, guint keycode, 
 
   /** Print dimensions if requested */
   if (options->dimensions) {
-    g_print ("%dx%d+%d+%d", ca->width, ca->height, ca->x, ca->y);
+    guint status = 0;
+    gchar *buf = malloc (8);
+    GString *dim_str = g_string_new (options->dimensions);
+    g_snprintf (buf, 8, "%d", ca->x);
+    status &= g_string_replace (dim_str, "%x", buf, 0);
+    g_snprintf (buf, 8, "%d", ca->y);
+    status &= g_string_replace (dim_str, "%y", buf, 0);
+    g_snprintf (buf, 8, "%d", ca->width);
+    status &= g_string_replace (dim_str, "%w", buf, 0);
+    g_snprintf (buf, 8, "%d", ca->height);
+    status &= g_string_replace (dim_str, "%h", buf, 0);
+    g_free (buf);
+    if (status) {
+      g_printerr("Error printing dimensions.\n");
+    } else {
+      g_print("%s", dim_str->str);
+    }
   }
 
   if (out_path != NULL) {

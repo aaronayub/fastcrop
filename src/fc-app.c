@@ -8,6 +8,7 @@
 #include "fc-app.h"
 #include "fc-app-window.h"
 #include "fc-options.h"
+#include "glib.h"
 
 struct _FcApp {
   GtkApplication parent;
@@ -31,7 +32,8 @@ static GActionEntry action_entries[] = {
 
 static gint fc_app_handle_local_options (GApplication *app, GVariantDict *options) {
   FcApp *fc_app = FC_APP (app);
-  fc_app->options->dimensions = (g_variant_dict_contains (options, "dimensions"));
+  fc_app->options->dimensions = malloc(100);
+  g_variant_dict_lookup (options, "dimensions", "s", &fc_app->options->dimensions);
   fc_app->options->magick = (g_variant_dict_contains (options, "magick"));
   fc_app->options->text = (g_variant_dict_contains (options, "text"));
 
@@ -77,7 +79,7 @@ static void fc_app_init (FcApp *app) {
 
   // Define program options
   const GOptionEntry options[] = {
-    {"dimensions", 'd', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL,
+    {"dimensions", 'd', G_OPTION_FLAG_NONE, G_OPTION_ARG_STRING, NULL,
       "Print output dimensions to standard output in the format of WxH+X+Y", NULL},
 #ifdef DEP_MAGICK
     {"magick", 'm', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL,
