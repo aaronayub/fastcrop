@@ -80,7 +80,7 @@ static void fc_app_init (FcApp *app) {
   // Define program options
   const GOptionEntry options[] = {
     {"dimensions", 'd', G_OPTION_FLAG_NONE, G_OPTION_ARG_STRING, NULL,
-      "Print output dimensions to standard output in the format of WxH+X+Y", NULL},
+      "Print output dimensions to standard output in a user-specified format. %x, %y, %w, and %h of the user's provided format will be replaced by the image's starting x, starting y, width, and height.", NULL},
 #ifdef DEP_MAGICK
     {"magick", 'm', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL,
       "Encode output files with MagickWand. Requires ImageMagick >=7.0.", NULL},
