@@ -40,4 +40,4 @@ jobs:
     - name: upload-release
       uses: ./.github/actions/upload-release
       with:
-        distro: "fedora-40"
+        distro: "fedora-41"
